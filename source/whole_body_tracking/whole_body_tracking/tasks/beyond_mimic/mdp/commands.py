@@ -125,7 +125,8 @@ class MotionCommand(CommandTerm):
         self.robot: Articulation = env.scene[cfg.asset_name]
         self.robot_anchor_body_index = self.robot.body_names.index(self.cfg.anchor_body_name)
         self.motion_anchor_body_index = self.cfg.body_names.index(self.cfg.anchor_body_name)
-        self.robot_joint_indexes = self.robot.find_joints(self.cfg.joint_names, preserve_order=True)[0]
+        # Resolve expressions to actual names in Isaac Lab's articulation order.
+        self.robot_joint_indexes, joint_names = self.robot.find_joints(self.cfg.joint_names)
         self.body_indexes = torch.tensor(
             self.robot.find_bodies(self.cfg.body_names, preserve_order=True)[0], dtype=torch.long, device=self.device
         )
@@ -134,7 +135,7 @@ class MotionCommand(CommandTerm):
             self.cfg.motion_file,
             self.cfg.body_names,
             device=self.device,
-            joint_names=self.cfg.joint_names,
+            joint_names=joint_names,
         )
         self.time_steps = torch.zeros(self.num_envs, dtype=torch.long, device=self.device)
         self.body_pos_relative_w = torch.zeros(self.num_envs, len(cfg.body_names), 3, device=self.device)
@@ -390,7 +391,7 @@ class MotionCommandCfg(CommandTermCfg):
     motion_file: str = MISSING
     anchor_body_name: str = MISSING
     body_names: list[str] = MISSING
-    joint_names: list[str] = [".*"]
+    joint_names: list[str] = [".*"]  # Joint expressions, resolved in articulation order.
 
     pose_range: dict[str, tuple[float, float]] = {}
     velocity_range: dict[str, tuple[float, float]] = {}

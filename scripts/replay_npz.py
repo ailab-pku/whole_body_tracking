@@ -47,12 +47,17 @@ from isaaclab.utils.assets import ISAAC_NUCLEUS_DIR
 ##
 # Pre-defined configs
 ##
-from whole_body_tracking.robots.g1 import G1_CYLINDER_CFG, G1_TRACKING_JOINT_NAMES
-from whole_body_tracking.assets.robots.x2_ultra import X2_ULTRA_CYLINDER_CFG, X2_ULTRA_TRACKING_JOINT_NAMES
+from whole_body_tracking.assets.robots.x2_ultra import X2_ULTRA_CYLINDER_CFG
 from whole_body_tracking.tasks.beyond_mimic.mdp import MotionLoader
 
-ROBOT_CFG = G1_CYLINDER_CFG if args_cli.robot == "g1" else X2_ULTRA_CYLINDER_CFG
-ROBOT_JOINT_NAMES = G1_TRACKING_JOINT_NAMES if args_cli.robot == "g1" else X2_ULTRA_TRACKING_JOINT_NAMES
+if args_cli.robot == "g1":
+    from whole_body_tracking.robots.g1 import G1_CYLINDER_CFG, G1_TRACKING_JOINT_NAMES
+
+    ROBOT_CFG = G1_CYLINDER_CFG
+    ROBOT_JOINT_NAMES = G1_TRACKING_JOINT_NAMES
+else:
+    ROBOT_CFG = X2_ULTRA_CYLINDER_CFG
+    ROBOT_JOINT_NAMES = None  # Resolve the Isaac Lab articulation order after initialization.
 
 
 @configclass
@@ -76,7 +81,8 @@ class ReplayMotionsSceneCfg(InteractiveSceneCfg):
 def run_simulator(sim: sim_utils.SimulationContext, scene: InteractiveScene):
     # Extract scene entities
     robot: Articulation = scene["robot"]
-    robot_joint_indexes = robot.find_joints(ROBOT_JOINT_NAMES, preserve_order=True)[0]
+    joint_names = robot.joint_names if ROBOT_JOINT_NAMES is None else ROBOT_JOINT_NAMES
+    robot_joint_indexes = robot.find_joints(joint_names, preserve_order=True)[0]
     # Define simulation stepping
     sim_dt = sim.get_physics_dt()
 
@@ -88,9 +94,9 @@ def run_simulator(sim: sim_utils.SimulationContext, scene: InteractiveScene):
 
     motion = MotionLoader(
         str(motion_path),
-        torch.tensor([0], dtype=torch.long, device=sim.device),
+        [robot.body_names[0]],
         sim.device,
-        joint_names=ROBOT_JOINT_NAMES,
+        joint_names=joint_names,
     )
     time_steps = torch.zeros(scene.num_envs, dtype=torch.long, device=sim.device)
 

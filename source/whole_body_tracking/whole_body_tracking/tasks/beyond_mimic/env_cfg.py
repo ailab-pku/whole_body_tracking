@@ -3,7 +3,6 @@ from isaaclab.utils import configclass
 from whole_body_tracking.assets.robots.x2_ultra import (
     X2_ULTRA_ACTION_SCALE,
     X2_ULTRA_CYLINDER_CFG,
-    X2_ULTRA_TRACKING_JOINT_NAMES,
 )
 from whole_body_tracking.tasks.beyond_mimic.tracking_env_cfg import TrackingEnvCfg
 
@@ -14,11 +13,8 @@ class X2_ULTRA_FlatEnvCfg(TrackingEnvCfg):
         super().__post_init__()
 
         self.scene.robot = X2_ULTRA_CYLINDER_CFG.replace(prim_path="{ENV_REGEX_NS}/Robot")
-        self.actions.joint_pos.joint_names = X2_ULTRA_TRACKING_JOINT_NAMES
-        self.actions.joint_pos.preserve_order = True
         self.actions.joint_pos.scale = X2_ULTRA_ACTION_SCALE
         self.commands.motion.anchor_body_name = "torso_link"
-        self.commands.motion.joint_names = X2_ULTRA_TRACKING_JOINT_NAMES
         self.commands.motion.body_names = [
             "pelvis",
             "left_hip_roll_link",

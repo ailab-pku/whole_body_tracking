@@ -18,7 +18,12 @@ from isaaclab.app import AppLauncher
 
 # add argparse arguments
 parser = argparse.ArgumentParser(description="Replay motion from csv file and output to npz file.")
-parser.add_argument("--input_file", type=str, required=True, help="The path to the input motion csv file.")
+parser.add_argument(
+    "--input_file",
+    type=str,
+    required=True,
+    help="Motion CSV path. For X2 Ultra, joint columns must follow Isaac Lab's default articulation order.",
+)
 parser.add_argument("--input_fps", type=int, default=30, help="The fps of the input motion.")
 parser.add_argument(
     "--frame_range",
@@ -70,11 +75,16 @@ from isaaclab.utils.math import axis_angle_from_quat, quat_conjugate, quat_mul, 
 ##
 # Pre-defined configs
 ##
-from whole_body_tracking.robots.g1 import G1_CYLINDER_CFG, G1_TRACKING_JOINT_NAMES
-from whole_body_tracking.assets.robots.x2_ultra import X2_ULTRA_CYLINDER_CFG, X2_ULTRA_TRACKING_JOINT_NAMES
+from whole_body_tracking.assets.robots.x2_ultra import X2_ULTRA_CYLINDER_CFG
 
-ROBOT_CFG = G1_CYLINDER_CFG if args_cli.robot == "g1" else X2_ULTRA_CYLINDER_CFG
-ROBOT_JOINT_NAMES = G1_TRACKING_JOINT_NAMES if args_cli.robot == "g1" else X2_ULTRA_TRACKING_JOINT_NAMES
+if args_cli.robot == "g1":
+    from whole_body_tracking.robots.g1 import G1_CYLINDER_CFG, G1_TRACKING_JOINT_NAMES
+
+    ROBOT_CFG = G1_CYLINDER_CFG
+    ROBOT_JOINT_NAMES = G1_TRACKING_JOINT_NAMES
+else:
+    ROBOT_CFG = X2_ULTRA_CYLINDER_CFG
+    ROBOT_JOINT_NAMES = None  # Resolve the Isaac Lab articulation order after initialization.
 
 
 @configclass
@@ -234,7 +244,7 @@ class MotionLoader:
         return state, reset_flag
 
 
-def run_simulator(sim: sim_utils.SimulationContext, scene: InteractiveScene, joint_names: list[str]):
+def run_simulator(sim: sim_utils.SimulationContext, scene: InteractiveScene, joint_names: list[str] | None):
     """Runs the simulation loop."""
     # Load motion
     motion = MotionLoader(
@@ -247,7 +257,11 @@ def run_simulator(sim: sim_utils.SimulationContext, scene: InteractiveScene, joi
 
     # Extract scene entities
     robot = scene["robot"]
+    if joint_names is None:
+        joint_names = robot.joint_names
     robot_joint_indexes = robot.find_joints(joint_names, preserve_order=True)[0]
+    if motion.motion_dof_poss.shape[1] != len(joint_names):
+        raise ValueError(f"CSV has {motion.motion_dof_poss.shape[1]} joint columns; expected {len(joint_names)}")
 
     # ------- data logger -------------------------------------------------------
     log = {

@@ -219,8 +219,8 @@ implicit actuators. The RL PD gains are:
 | Head hold controller | 20 | 2 |
 
 Action scales are computed per joint as `0.25 * effort_limit / stiffness`. Actions, motion commands, and simulated
-joint states all use the 31-joint URDF order. The two head action dimensions have zero scale, while a fixed PD
-controller holds the head at its default zero pose.
+joint states all use Isaac Lab's default 31-joint articulation order, resolved from the robot at runtime. The two head
+action dimensions have zero scale, while a fixed PD controller holds the head at its default zero pose.
 
 ### Registered X2 Ultra tasks
 
@@ -252,9 +252,11 @@ body_names         [32]
 fps
 ```
 
-`MotionLoader` checks that the NPZ joint count and `joint_names` agree with the X2 configuration. `MotionCommand`
-resolves the simulated joint indices with `preserve_order=True`, so reference joint positions/velocities and simulated
-joint positions/velocities are compared column-for-column.
+`MotionCommand` resolves joint expressions in Isaac Lab's default articulation order. `MotionLoader` validates the
+NPZ joint count and `joint_names`, then reorders reference positions/velocities by name to match that order. Existing
+NPZ files with joint-name metadata remain supported. The MuJoCo converter writes joints in MuJoCo model order;
+`scripts/csv_to_npz.py --robot x2_ultra` expects unnamed CSV joint columns in Isaac Lab's default articulation order.
+Policies trained with the former custom action/command order require retraining or explicit input/output remapping.
 
 The imitation reward remains the original body-space BeyondMimic objective: torso anchor pose plus the position,
 orientation, linear velocity, and angular velocity of 14 selected bodies. Joint position and velocity errors are

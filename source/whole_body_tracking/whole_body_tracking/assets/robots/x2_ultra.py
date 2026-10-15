@@ -7,42 +7,6 @@ from isaaclab.assets.articulation import ArticulationCfg
 from whole_body_tracking.assets import ROBOT_X2_ULTRA_ASSET_DIR
 
 
-# SDK/motion/action joint order. Head actions keep the deployment interface at
-# 31 dimensions but have zero scale, so the fixed head PD target stays at zero.
-X2_ULTRA_TRACKING_JOINT_NAMES = [
-    "left_hip_pitch_joint",
-    "left_hip_roll_joint",
-    "left_hip_yaw_joint",
-    "left_knee_joint",
-    "left_ankle_pitch_joint",
-    "left_ankle_roll_joint",
-    "right_hip_pitch_joint",
-    "right_hip_roll_joint",
-    "right_hip_yaw_joint",
-    "right_knee_joint",
-    "right_ankle_pitch_joint",
-    "right_ankle_roll_joint",
-    "waist_yaw_joint",
-    "waist_pitch_joint",
-    "waist_roll_joint",
-    "left_shoulder_pitch_joint",
-    "left_shoulder_roll_joint",
-    "left_shoulder_yaw_joint",
-    "left_elbow_joint",
-    "left_wrist_yaw_joint",
-    "left_wrist_pitch_joint",
-    "left_wrist_roll_joint",
-    "right_shoulder_pitch_joint",
-    "right_shoulder_roll_joint",
-    "right_shoulder_yaw_joint",
-    "right_elbow_joint",
-    "right_wrist_yaw_joint",
-    "right_wrist_pitch_joint",
-    "right_wrist_roll_joint",
-    "head_yaw_joint",
-    "head_pitch_joint",
-]
-
 # Values resolved from the official x2_config/joint_gains.yaml used by the
 # AimDK example. Keeping the maps here makes this extension self-contained.
 X2_ULTRA_RL_STIFFNESS = {
@@ -305,5 +269,5 @@ X2_ULTRA_ACTION_SCALE = {
     joint: 0.25 * _EFFORT_LIMITS[joint] / X2_ULTRA_RL_STIFFNESS[joint]
     if joint in _EFFORT_LIMITS and X2_ULTRA_RL_STIFFNESS[joint] > 0.0
     else 0.0
-    for joint in X2_ULTRA_TRACKING_JOINT_NAMES
+    for joint in X2_ULTRA_RL_STIFFNESS
 }

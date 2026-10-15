@@ -1,7 +1,8 @@
 """Convert a named-column X2 Ultra motion CSV to BeyondMimic NPZ and render it with MuJoCo.
 
 The standard BeyondMimic arrays contain all 31 X2 joints, including the two
-head joints. Full model-order arrays are retained as metadata for inspection.
+head joints, in MuJoCo model order. Isaac Lab resolves joint_names into its
+own default order when loading. Full model-order arrays are retained as metadata.
 """
 
 from __future__ import annotations
@@ -16,41 +17,6 @@ os.environ.setdefault("MUJOCO_GL", "egl")
 
 import mujoco
 import numpy as np
-
-
-TRACKING_JOINT_NAMES = [
-    "left_hip_pitch_joint",
-    "left_hip_roll_joint",
-    "left_hip_yaw_joint",
-    "left_knee_joint",
-    "left_ankle_pitch_joint",
-    "left_ankle_roll_joint",
-    "right_hip_pitch_joint",
-    "right_hip_roll_joint",
-    "right_hip_yaw_joint",
-    "right_knee_joint",
-    "right_ankle_pitch_joint",
-    "right_ankle_roll_joint",
-    "waist_yaw_joint",
-    "waist_pitch_joint",
-    "waist_roll_joint",
-    "left_shoulder_pitch_joint",
-    "left_shoulder_roll_joint",
-    "left_shoulder_yaw_joint",
-    "left_elbow_joint",
-    "left_wrist_yaw_joint",
-    "left_wrist_pitch_joint",
-    "left_wrist_roll_joint",
-    "right_shoulder_pitch_joint",
-    "right_shoulder_roll_joint",
-    "right_shoulder_yaw_joint",
-    "right_elbow_joint",
-    "right_wrist_yaw_joint",
-    "right_wrist_pitch_joint",
-    "right_wrist_roll_joint",
-    "head_yaw_joint",
-    "head_pitch_joint",
-]
 
 
 def parse_args() -> argparse.Namespace:
@@ -269,24 +235,19 @@ def main() -> None:
     for body_index in range(len(body_ids)):
         body_ang_vel_w[:, body_index] = quaternion_velocity(body_quat_w[:, body_index], times)
 
-    model_joint_index = {name: index for index, name in enumerate(model_joint_names)}
-    tracking_indices = [model_joint_index[name] for name in TRACKING_JOINT_NAMES]
-    joint_pos = joint_pos_full[:, tracking_indices]
-    joint_vel = joint_vel_full[:, tracking_indices]
-
     args.output_npz.parent.mkdir(parents=True, exist_ok=True)
     np.savez_compressed(
         args.output_npz,
         fps=np.asarray([fps], dtype=np.float32),
-        joint_pos=joint_pos.astype(np.float32),
-        joint_vel=joint_vel.astype(np.float32),
+        joint_pos=joint_pos_full.astype(np.float32),
+        joint_vel=joint_vel_full.astype(np.float32),
         body_pos_w=body_pos_w.astype(np.float32),
         body_quat_w=body_quat_w.astype(np.float32),
         body_lin_vel_w=body_lin_vel_w.astype(np.float32),
         body_ang_vel_w=body_ang_vel_w.astype(np.float32),
         joint_pos_full=joint_pos_full.astype(np.float32),
         joint_vel_full=joint_vel_full.astype(np.float32),
-        joint_names=np.asarray(TRACKING_JOINT_NAMES),
+        joint_names=np.asarray(model_joint_names),
         full_joint_names=np.asarray(model_joint_names),
         body_names=np.asarray(body_names),
         time=times.astype(np.float64),
