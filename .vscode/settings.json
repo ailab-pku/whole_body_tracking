@@ -1,0 +1,12 @@
+{
+    "python-envs.defaultEnvManager": "ms-python.python:venv",
+    "python-envs.defaultPackageManager": "ms-python.python:pip",
+    "python.analysis.extraPaths": [
+        "~/IsaacLab/source/isaaclab",
+        "~/IsaacLab/source/isaaclab_rl",
+        "~/IsaacLab/source/isaaclab_tasks",
+        "~/IsaacLab/source/isaaclab_mimic",
+        "~/IsaacLab/source/isaaclab_assets",
+        "~/cbz/whole_body_tracking_X2_ultra-main/source/whole_body_tracking",
+    ]
+}
