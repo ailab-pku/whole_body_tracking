@@ -16,4 +16,6 @@
 
 ## 致谢
 
+感谢智元机器人（[Agibot](https://www.agibot.com/)）提供 X2 Ultra 机器人及相关资源支持。
+
 感谢 [BeyondMimic](https://beyondmimic.github.io/) 团队开源的动作跟踪框架，本项目基于其 [原始代码](https://github.com/HybridRobotics/whole_body_tracking) 进行适配。
