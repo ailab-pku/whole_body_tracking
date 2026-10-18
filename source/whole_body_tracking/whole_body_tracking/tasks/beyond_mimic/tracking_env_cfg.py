@@ -28,12 +28,12 @@ import whole_body_tracking.tasks.beyond_mimic.mdp as mdp
 ##
 
 VELOCITY_RANGE = {
-    "x": (-0.03, 0.03),
-    "y": (-0.03, 0.03),
-    "z": (-0.01, 0.01),
-    "roll": (-0.03, 0.03),
-    "pitch": (-0.03, 0.03),
-    "yaw": (-0.05, 0.05),
+    "x": (-0.5, 0.5),
+    "y": (-0.5, 0.5),
+    "z": (-0.2, 0.2),
+    "roll": (-0.52, 0.52),
+    "pitch": (-0.52, 0.52),
+    "yaw": (-0.78, 0.78),
 }
 
 
@@ -87,15 +87,15 @@ class CommandsCfg:
         resampling_time_range=(1.0e9, 1.0e9),
         debug_vis=True,
         pose_range={
-            "x": (-0.01, 0.01),
-            "y": (-0.01, 0.01),
-            "z": (-0.003, 0.003),
-            "roll": (-0.01, 0.01),
-            "pitch": (-0.01, 0.01),
-            "yaw": (-0.03, 0.03),
+            "x": (-0.05, 0.05),
+            "y": (-0.05, 0.05),
+            "z": (-0.01, 0.01),
+            "roll": (-0.1, 0.1),
+            "pitch": (-0.1, 0.1),
+            "yaw": (-0.2, 0.2),
         },
         velocity_range=VELOCITY_RANGE,
-        joint_position_range=(-0.01, 0.01),
+        joint_position_range=(-0.1, 0.1),
     )
 
 
@@ -117,15 +117,15 @@ class ObservationsCfg:
         # observation terms (order preserved)
         command = ObsTerm(func=mdp.generated_commands, params={"command_name": "motion"})
         motion_anchor_pos_b = ObsTerm(
-            func=mdp.motion_anchor_pos_b, params={"command_name": "motion"}, noise=Unoise(n_min=-0.02, n_max=0.02)
+            func=mdp.motion_anchor_pos_b, params={"command_name": "motion"}, noise=Unoise(n_min=-0.25, n_max=0.25)
         )
         motion_anchor_ori_b = ObsTerm(
-            func=mdp.motion_anchor_ori_b, params={"command_name": "motion"}, noise=Unoise(n_min=-0.01, n_max=0.01)
+            func=mdp.motion_anchor_ori_b, params={"command_name": "motion"}, noise=Unoise(n_min=-0.05, n_max=0.05)
         )
-        base_lin_vel = ObsTerm(func=mdp.base_lin_vel, noise=Unoise(n_min=-0.05, n_max=0.05))
-        base_ang_vel = ObsTerm(func=mdp.base_ang_vel, noise=Unoise(n_min=-0.05, n_max=0.05))
-        joint_pos = ObsTerm(func=mdp.joint_pos_rel, noise=Unoise(n_min=-0.003, n_max=0.003))
-        joint_vel = ObsTerm(func=mdp.joint_vel_rel, noise=Unoise(n_min=-0.1, n_max=0.1))
+        base_lin_vel = ObsTerm(func=mdp.base_lin_vel, noise=Unoise(n_min=-0.5, n_max=0.5))
+        base_ang_vel = ObsTerm(func=mdp.base_ang_vel, noise=Unoise(n_min=-0.2, n_max=0.2))
+        joint_pos = ObsTerm(func=mdp.joint_pos_rel, noise=Unoise(n_min=-0.01, n_max=0.01))
+        joint_vel = ObsTerm(func=mdp.joint_vel_rel, noise=Unoise(n_min=-0.5, n_max=0.5))
         actions = ObsTerm(func=mdp.last_action)
 
         def __post_init__(self):
@@ -190,7 +190,7 @@ class EventCfg:
     push_robot = EventTerm(
         func=mdp.push_by_setting_velocity,
         mode="interval",
-        interval_range_s=(6.0, 10.0),
+        interval_range_s=(1.0, 3.0),
         params={"velocity_range": VELOCITY_RANGE},
     )
 
